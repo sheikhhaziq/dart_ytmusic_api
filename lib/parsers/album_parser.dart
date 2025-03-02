@@ -1,3 +1,6 @@
+import 'package:dart_ytmusic_api/Modals/album.dart';
+import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 import 'package:dart_ytmusic_api/parsers/song_parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
@@ -17,7 +20,7 @@ class AlbumParser {
     );
 
     final thumbnails = traverseList(data, ["background", "thumbnails"])
-        .map((item) => ThumbnailFull.fromMap(item))
+        .map((item) => Thumbnail.fromMap(item))
         .toList();
 
     return AlbumFull(
@@ -66,7 +69,7 @@ class AlbumParser {
       year: processYear(columns.last?['text']),
       name: traverseString(title, ["text"]) ?? '',
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -84,7 +87,7 @@ class AlbumParser {
       artist: artistBasic,
       year: processYear(traverseList(item, ["subtitle", "text"]).last),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -102,7 +105,7 @@ class AlbumParser {
       artist: artistBasic,
       year: processYear(traverseList(item, ["subtitle", "text"]).last),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -122,7 +125,7 @@ class AlbumParser {
       ),
       year: null,
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }

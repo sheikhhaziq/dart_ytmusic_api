@@ -1,3 +1,6 @@
+import 'package:dart_ytmusic_api/Modals/album.dart';
+import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 import 'package:dart_ytmusic_api/parsers/parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
@@ -16,7 +19,7 @@ class SongParser {
       duration: int.parse(
           traverseString(data, ["videoDetails", "lengthSeconds"]) ?? '0'),
       thumbnails: traverseList(data, ["videoDetails", "thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
       formats: traverseList(data, ["streamingData", "formats"]),
       adaptiveFormats: traverseList(data, ["streamingData", "adaptiveFormats"]),
@@ -49,7 +52,7 @@ class SongParser {
           : null,
       duration: Parser.parseDuration(duration?['text']),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -78,7 +81,7 @@ class SongParser {
           : null,
       duration: Parser.parseDuration(cleanedDuration),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -105,7 +108,7 @@ class SongParser {
           : null,
       duration: null,
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -114,7 +117,7 @@ class SongParser {
     dynamic item,
     ArtistBasic artistBasic,
     AlbumBasic albumBasic,
-    List<ThumbnailFull> thumbnails,
+    List<Thumbnail> thumbnails,
   ) {
     final title = traverseList(item, ["flexColumns", "runs"])
         .firstWhere(isTitle, orElse: () => null);

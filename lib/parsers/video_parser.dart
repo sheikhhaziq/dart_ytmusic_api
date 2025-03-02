@@ -1,3 +1,5 @@
+import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 import 'package:dart_ytmusic_api/parsers/parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
@@ -16,7 +18,7 @@ class VideoParser {
       duration: int.parse(
           traverseString(data, ["videoDetails", "lengthSeconds"]) ?? '0'),
       thumbnails: traverseList(data, ["videoDetails", "thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
       unlisted: traverse(data, ["unlisted"]),
       familySafe: traverse(data, ["familySafe"]),
@@ -45,7 +47,7 @@ class VideoParser {
       ),
       duration: Parser.parseDuration(duration?['text']),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -59,7 +61,7 @@ class VideoParser {
       artist: artistBasic,
       duration: null,
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -96,7 +98,7 @@ class VideoParser {
       ),
       duration: Parser.parseDuration(duration?.text),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }

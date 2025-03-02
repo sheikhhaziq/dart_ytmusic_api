@@ -1,28 +1,59 @@
+import 'package:dart_ytmusic_api/Modals/album.dart';
+import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/playlist.dart';
+import 'package:dart_ytmusic_api/Modals/section.dart';
+import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
+import 'package:dart_ytmusic_api/parsers/parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 
 class PlaylistParser {
-  static PlaylistFull parse(dynamic data, String playlistId) {
+  static PlaylistPage parse(dynamic data) {
     final artist = traverse(data, ["tabs", "straplineTextOne"]);
 
-    return PlaylistFull(
-      type: "PLAYLIST",
-      playlistId: playlistId,
-      name: traverseString(data, ["tabs", "title", "text"]) ?? '',
+    /// ["thumbnail","buttons", "title","subtitle","trackingParams","description", "secondSubtitle","facepile"];
+    final header = traverse(data, [
+      'contents',
+      'tabs',
+      'content',
+      'sectionListRenderer',
+      'contents',
+      'musicResponsiveHeaderRenderer'
+    ]);
+
+    final sections = traverse(data,
+        ['contents', 'secondaryContents', 'sectionListRenderer', 'contents']);
+
+    final playEndpoint = traverse(header['buttons'],
+        ['musicPlayButtonRenderer', 'playNavigationEndpoint', 'watchEndpoint']);
+    final buttons = traverseList(header['buttons'],
+        ['menuRenderer', 'items', 'menuNavigationItemRenderer']);
+
+    return PlaylistPage(
+      playlistId: 'playlistId',
+      title: traverseString(header['title'], ["text"]) ?? '',
+      subtitle: traverseList(header['subtitle'], ['runs', 'text']).join(),
+      secondSubtitle:
+          traverseList(header['secondSubtitle'], ['runs', 'text']).join(),
+      description:
+          traverseString(header['description'], ['description', 'text']),
+      playEndpoint: playEndpoint is Map ? playEndpoint.cast() : null,
+      shuffleEndpoint: buttons.firstWhere(isShuffle,
+          orElse: () => null)?['navigationEndpoint']?['watchPlaylistEndpoint'],
+      radioEndpoint: buttons.firstWhere(isRadio,
+          orElse: () => null)?['navigationEndpoint']?['watchPlaylistEndpoint'],
       artist: ArtistBasic(
         name: traverseString(artist, ["text"]) ?? '',
         artistId: traverseString(artist, ["browseId"]),
       ),
-      videoCount: int.tryParse(
-              traverseList(data, ["tabs", "secondSubtitle", "text"])
-                  .elementAt(2)
-                  .split(" ")
-                  .first
-                  .replaceAll(",", "")) ??
-          0,
-      thumbnails: traverseList(data, ["tabs", "thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+      thumbnails: traverseList(header, ['thumbnail', 'thumbnail', 'thumbnails'])
+          .map((item) => Thumbnail.fromMap(item))
+          .toList(),
+      sections: sections
+          .map(Parser.parseSection)
+          .where((e) => e != null)
+          .cast<Section>()
           .toList(),
     );
   }
@@ -53,7 +84,7 @@ class PlaylistParser {
         artistId: traverseString(artist, ["browseId"]),
       ),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -67,7 +98,7 @@ class PlaylistParser {
       name: traverseString(item, ["runs", "text"]) ?? '',
       artist: artistBasic,
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -85,7 +116,7 @@ class PlaylistParser {
         artistId: traverseString(artist, ["browseId"]),
       ),
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }

@@ -129,8 +129,8 @@ Future<void> getArtistSongs(YTMusic ytmusic) async {
 // General Data Retrieval Methods
 /// Retrieves home sections and prints the results.
 Future<void> getHomeSections(YTMusic ytmusic) async {
-  final results = await ytmusic.getHomeSections();
-  for (final result in results) {
+  final results = await ytmusic.getHomePage();
+  for (final result in results.sections) {
     print('${result.title} - ${result.contents}');
   }
 }

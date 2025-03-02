@@ -1,50 +1,6 @@
-class ThumbnailFull {
-  final String url;
-  final int width;
-  final int height;
-
-  ThumbnailFull({
-    required this.url,
-    required this.width,
-    required this.height,
-  });
-
-  // Construtor nomeado para criar uma ThumbnailFull a partir de um mapa
-  ThumbnailFull.fromMap(Map<String, dynamic> map)
-      : url = map['url'] as String,
-        width = map['width'] as int,
-        height = map['height'] as int;
-}
-
-class ArtistBasic {
-  final String? artistId;
-  final String name;
-
-  ArtistBasic({
-    this.artistId,
-    required this.name,
-  });
-
-  // Construtor nomeado para criar uma ArtistBasic a partir de um mapa
-  ArtistBasic.fromMap(Map<String, dynamic> map)
-      : artistId = map['artistId'] as String?,
-        name = map['name'] as String;
-}
-
-class AlbumBasic {
-  final String albumId;
-  final String name;
-
-  AlbumBasic({
-    required this.albumId,
-    required this.name,
-  });
-
-  // Construtor nomeado para criar uma AlbumBasic a partir de um mapa
-  AlbumBasic.fromMap(Map<String, dynamic> map)
-      : albumId = map['albumId'] as String,
-        name = map['name'] as String;
-}
+import 'package:dart_ytmusic_api/Modals/album.dart';
+import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 
 class SongDetailed {
   final String type;
@@ -53,7 +9,7 @@ class SongDetailed {
   final ArtistBasic artist;
   final AlbumBasic? album;
   final int? duration;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
 
   SongDetailed({
     required this.type,
@@ -74,7 +30,7 @@ class SongDetailed {
         album = map['album'] != null ? AlbumBasic.fromMap(map['album']) : null,
         duration = map['duration'] as int?,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList();
 }
 
@@ -85,7 +41,7 @@ class VideoDetailed implements SearchResult {
   final String name;
   final ArtistBasic artist;
   final int? duration;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
 
   VideoDetailed({
     required this.type,
@@ -104,7 +60,7 @@ class VideoDetailed implements SearchResult {
         artist = ArtistBasic.fromMap(map['artist']),
         duration = map['duration'] as int?,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList();
 }
 
@@ -113,7 +69,7 @@ class ArtistDetailed implements SearchResult {
   final String name;
   @override
   final String type;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
 
   ArtistDetailed({
     required this.artistId,
@@ -128,7 +84,7 @@ class ArtistDetailed implements SearchResult {
         name = map['name'] as String,
         type = map['type'] as String,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList();
 }
 
@@ -140,7 +96,7 @@ class AlbumDetailed implements SearchResult {
   final String name;
   final ArtistBasic artist;
   final int? year;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
 
   AlbumDetailed({
     required this.type,
@@ -161,7 +117,7 @@ class AlbumDetailed implements SearchResult {
         artist = ArtistBasic.fromMap(map['artist']),
         year = map['year'] as int?,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList();
 }
 
@@ -171,7 +127,7 @@ class PlaylistDetailed implements SearchResult {
   final String playlistId;
   final String name;
   final ArtistBasic artist;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
 
   PlaylistDetailed({
     required this.type,
@@ -188,7 +144,7 @@ class PlaylistDetailed implements SearchResult {
         name = map['name'] as String,
         artist = ArtistBasic.fromMap(map['artist']),
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList();
 }
 
@@ -199,7 +155,7 @@ class SongFull implements SearchResult {
   final String name;
   final ArtistBasic artist;
   final int duration;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
   final List<dynamic> formats;
   final List<dynamic> adaptiveFormats;
 
@@ -222,7 +178,7 @@ class SongFull implements SearchResult {
         artist = ArtistBasic.fromMap(map['artist']),
         duration = map['duration'] as int,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList(),
         formats = map['formats'] as List<dynamic>,
         adaptiveFormats = map['adaptiveFormats'] as List<dynamic>;
@@ -234,7 +190,7 @@ class VideoFull {
   final String name;
   final ArtistBasic artist;
   final int duration;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
   final bool unlisted;
   final bool familySafe;
   final bool paid;
@@ -261,7 +217,7 @@ class VideoFull {
         artist = ArtistBasic.fromMap(map['artist']),
         duration = map['duration'] as int,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList(),
         unlisted = map['unlisted'] as bool,
         familySafe = map['familySafe'] as bool,
@@ -274,7 +230,7 @@ class ArtistFull implements SearchResult {
   final String name;
   @override
   final String type;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
   final List<SongDetailed> topSongs;
   final List<AlbumDetailed> topAlbums;
   final List<AlbumDetailed> topSingles;
@@ -301,7 +257,7 @@ class ArtistFull implements SearchResult {
         name = map['name'] as String,
         type = map['type'] as String,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList(),
         topSongs = (map['topSongs'] as List)
             .map((item) => SongDetailed.fromMap(item))
@@ -330,7 +286,7 @@ class AlbumFull {
   final String name;
   final ArtistBasic artist;
   final int? year;
-  final List<ThumbnailFull> thumbnails;
+  final List<Thumbnail> thumbnails;
   List<SongDetailed> songs;
 
   AlbumFull({
@@ -353,39 +309,10 @@ class AlbumFull {
         artist = ArtistBasic.fromMap(map['artist']),
         year = map['year'] as int?,
         thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
+            .map((item) => Thumbnail.fromMap(item))
             .toList(),
         songs = (map['songs'] as List)
             .map((item) => SongDetailed.fromMap(item))
-            .toList();
-}
-
-class PlaylistFull {
-  final String type;
-  final String playlistId;
-  final String name;
-  final ArtistBasic artist;
-  final int videoCount;
-  final List<ThumbnailFull> thumbnails;
-
-  PlaylistFull({
-    required this.type,
-    required this.playlistId,
-    required this.name,
-    required this.artist,
-    required this.videoCount,
-    required this.thumbnails,
-  });
-
-  // Construtor nomeado para criar uma PlaylistFull a partir de um mapa
-  PlaylistFull.fromMap(Map<String, dynamic> map)
-      : type = map['type'] as String,
-        playlistId = map['playlistId'] as String,
-        name = map['name'] as String,
-        artist = ArtistBasic.fromMap(map['artist']),
-        videoCount = map['videoCount'] as int,
-        thumbnails = (map['thumbnails'] as List)
-            .map((item) => ThumbnailFull.fromMap(item))
             .toList();
 }
 

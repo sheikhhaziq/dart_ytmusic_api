@@ -1,4 +1,8 @@
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/home_page.dart';
+import 'package:dart_ytmusic_api/Modals/playlist.dart';
+import 'package:dart_ytmusic_api/Modals/section.dart';
 import 'package:dart_ytmusic_api/enums.dart';
 import 'package:dart_ytmusic_api/parsers/album_parser.dart';
 import 'package:dart_ytmusic_api/parsers/artist_parser.dart';
@@ -8,6 +12,7 @@ import 'package:dart_ytmusic_api/parsers/search_parser.dart';
 import 'package:dart_ytmusic_api/parsers/song_parser.dart';
 import 'package:dart_ytmusic_api/parsers/video_parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
+import 'package:dart_ytmusic_api/utils/prettyprint.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 import 'package:dio/dio.dart';
 
@@ -514,7 +519,13 @@ class YTMusic {
   }
 
   /// Retrieves detailed information about a playlist given its playlist ID.
-  Future<PlaylistFull> getPlaylist(String playlistId) async {
+  Future<PlaylistPage> getPlaylistPage(Map<String, dynamic> endpoint) async {
+    final data = await constructRequest("browse", body: endpoint);
+    return PlaylistParser.parse(data);
+  }
+
+  /// Retrieves detailed information about a playlist given its playlist ID.
+  Future<PlaylistPage> getPlaylistPageFromId(String playlistId) async {
     if (playlistId.startsWith("PL")) {
       playlistId = "VL$playlistId";
     }
@@ -522,7 +533,7 @@ class YTMusic {
     final data =
         await constructRequest("browse", body: {"browseId": playlistId});
 
-    return PlaylistParser.parse(data, playlistId);
+    return PlaylistParser.parse(data);
   }
 
   /// Retrieves a list of videos from a playlist given its playlist ID.
@@ -559,20 +570,34 @@ class YTMusic {
   }
 
   /// Retrieves the home sections of the music platform.
-  Future<List<HomeSection>> getHomeSections() async {
-    final data =
-        await constructRequest("browse", body: {"browseId": feMusicHome});
-
-    final sections = traverseList(data, ["sectionListRenderer", "contents"]);
-    dynamic continuation = traverseString(data, ["continuation"]);
-    while (continuation != null) {
+  Future<HomePage> getHomePage(
+      {int limit = 3, String? continuationToken}) async {
+    List sections = [];
+    dynamic continuation = continuationToken;
+    if (continuation == null) {
+      final data =
+          await constructRequest("browse", body: {"browseId": feMusicHome});
+      sections = traverseList(data, ["sectionListRenderer", "contents"]);
+      continuation = traverseString(data, ["continuation"]);
+      limit--;
+    }
+    while (continuation != null && limit > 0) {
       final data = await constructRequest("browse",
           query: {"continuation": continuation});
+
       sections
           .addAll(traverseList(data, ["sectionListContinuation", "contents"]));
       continuation = traverseString(data, ["continuation"]);
+      limit--;
     }
 
-    return sections.map(Parser.parseHomeSection).toList();
+    return HomePage(
+      continuation: continuation,
+      sections: sections
+          .map(Parser.parseSection)
+          .where((e) => e != null)
+          .cast<Section>()
+          .toList(),
+    );
   }
 }

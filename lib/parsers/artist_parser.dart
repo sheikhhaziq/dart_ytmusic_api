@@ -1,3 +1,5 @@
+import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 import 'package:dart_ytmusic_api/parsers/album_parser.dart';
 import 'package:dart_ytmusic_api/parsers/playlist_parser.dart';
 import 'package:dart_ytmusic_api/parsers/song_parser.dart';
@@ -17,7 +19,7 @@ class ArtistParser {
       type: "ARTIST",
       artistId: artistId,
       thumbnails: traverseList(data, ["header", "thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
       topSongs: traverseList(data, ["musicShelfRenderer", "contents"])
           .map((item) => SongParser.parseArtistTopSong(item, artistBasic))
@@ -87,7 +89,7 @@ class ArtistParser {
       artistId: traverseString(item, ["browseId"]) ?? '',
       name: traverseString(title, ["text"]) ?? '',
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }
@@ -98,7 +100,7 @@ class ArtistParser {
       artistId: traverseString(item, ["browseId"]) ?? '',
       name: traverseString(item, ["runs", "text"]) ?? '',
       thumbnails: traverseList(item, ["thumbnails"])
-          .map((item) => ThumbnailFull.fromMap(item))
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
     );
   }

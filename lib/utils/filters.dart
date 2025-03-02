@@ -18,6 +18,14 @@ bool isAlbum(dynamic data) {
   return traverseString(data, ["pageType"]) == "MUSIC_PAGE_TYPE_ALBUM";
 }
 
+bool isShuffle(dynamic data) {
+  return traverseString(data, ['icon', 'iconType']) == 'MUSIC_SHUFFLE';
+}
+
+bool isRadio(dynamic data) {
+  return traverseString(data, ['icon', 'iconType']) == 'MIX';
+}
+
 /// Verifica se um objeto representa uma duração.
 bool isDuration(dynamic data) {
   final text = traverseString(data, ["text"]);
