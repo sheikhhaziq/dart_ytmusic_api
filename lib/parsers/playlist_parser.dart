@@ -6,6 +6,7 @@ import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 import 'package:dart_ytmusic_api/parsers/parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
+import 'package:dart_ytmusic_api/utils/prettyprint.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 
 class PlaylistParser {
@@ -24,7 +25,6 @@ class PlaylistParser {
 
     final sections = traverse(data,
         ['contents', 'secondaryContents', 'sectionListRenderer', 'contents']);
-
     final playEndpoint = traverse(header['buttons'],
         ['musicPlayButtonRenderer', 'playNavigationEndpoint', 'watchEndpoint']);
     final buttons = traverseList(header['buttons'],

@@ -1,49 +1,78 @@
 import 'package:dart_ytmusic_api/Modals/album.dart';
 import 'package:dart_ytmusic_api/Modals/artist.dart';
+import 'package:dart_ytmusic_api/Modals/section.dart';
 import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
-import 'package:dart_ytmusic_api/parsers/song_parser.dart';
+import 'package:dart_ytmusic_api/parsers/parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 
 class AlbumParser {
-  static AlbumFull parse(dynamic data, String albumId) {
-    final albumBasic = AlbumBasic(
-      albumId: albumId,
-      name: traverseString(data, ["tabs", "title", "text"]) ?? '',
-    );
+  static AlbumPage parse(dynamic data) {
+    final header = traverse(data, [
+      'contents',
+      'tabs',
+      'content',
+      'sectionListRenderer',
+      'contents',
+      'musicResponsiveHeaderRenderer'
+    ]);
 
-    final artistData = traverse(data, ["tabs", "straplineTextOne", "runs"]);
-    final artistBasic = ArtistBasic(
-      artistId: traverseString(artistData, ["browseId"]),
-      name: traverseString(artistData, ["text"]) ?? '',
-    );
+    final sections = traverse(data,
+        ['contents', 'secondaryContents', 'sectionListRenderer', 'contents']);
+    final playEndpoint = traverse(header['buttons'],
+        ['musicPlayButtonRenderer', 'playNavigationEndpoint', 'watchEndpoint']);
+    final playPlaylistEndpoint = traverse(header['buttons'],
+        ['musicPlayButtonRenderer', 'playNavigationEndpoint', 'watchPlaylistEndpoint']);
+    final buttons = traverseList(header['buttons'],
+        ['menuRenderer', 'items', 'menuNavigationItemRenderer']);
+    
 
-    final thumbnails = traverseList(data, ["background", "thumbnails"])
-        .map((item) => Thumbnail.fromMap(item))
-        .toList();
 
-    return AlbumFull(
-      name: albumBasic.name,
-      type: "ALBUM",
-      albumId: albumId,
+    final List artistData = traverse(data, ["tabs", "straplineTextOne", "runs"]);
+    final List<ArtistBasic> artists = artistData.map((artist)=>ArtistBasic(
+      artistId: traverseString(artist, ["browseId"]),
+      name: traverseString(artist, ["text"]) ?? '',
+      endpoint: traverse(artist, ['navigationEndpoint','browseEndpoint'])
+    )).toList();
+
+
+
+    return AlbumPage(
+
+      title: traverseString(header['title'], ["text"]) ?? '',
       playlistId:
           traverseString(data, ["musicPlayButtonRenderer", "playlistId"]) ?? '',
-      artist: artistBasic,
-      year: processYear(
-        traverseList(data, ["tabs", "subtitle", "text"]).last,
-      ),
-      thumbnails: thumbnails,
-      songs: traverseList(data, ["musicResponsiveListItemRenderer"])
-          .map(
-            (item) => SongParser.parseAlbumSong(
-              item,
-              artistBasic,
-              albumBasic,
-              thumbnails,
-            ),
-          )
+      artists: artists,
+      subtitle: traverseList(header['subtitle'], ['runs', 'text']).join(),
+      secondSubtitle:
+          traverseList(header['secondSubtitle'], ['runs', 'text']).join(),
+      description:
+          traverseString(header['description'], ['description', 'text']),
+      playEndpoint: playEndpoint is Map ? playEndpoint.cast() : null,
+      playPlaylistEndpoint: playPlaylistEndpoint is Map ? playPlaylistEndpoint.cast():null,
+      shuffleEndpoint: buttons.firstWhere(isShuffle,
+          orElse: () => null)?['navigationEndpoint']?['watchPlaylistEndpoint'],
+      radioEndpoint: buttons.firstWhere(isRadio,
+          orElse: () => null)?['navigationEndpoint']?['watchPlaylistEndpoint'],
+      thumbnails: traverseList(header, ['thumbnail', 'thumbnail', 'thumbnails'])
+          .map((item) => Thumbnail.fromMap(item))
           .toList(),
+      sections: sections
+          .map(Parser.parseSection)
+          .where((e) => e != null)
+          .cast<Section>()
+          .toList(),
+      // songs: traverseList(data, ["musicResponsiveListItemRenderer"])
+      //     .map(
+      //       (item) => SongParser.parseAlbumSong(
+      //         item,
+      //         artistBasic,
+      //         albumBasic,
+      //         thumbnails,
+      //       ),
+      //     )
+      //     .toList(),
     );
   }
 

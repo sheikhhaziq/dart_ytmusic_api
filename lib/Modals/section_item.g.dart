@@ -11,6 +11,7 @@ SectionItem _$SectionItemFromJson(Map<String, dynamic> json) => SectionItem(
       id: json['id'] as String,
       type: $enumDecode(_$ItemTypeEnumMap, json['type']),
       playlistId: json['playlistId'] as String?,
+      duration: json['duration'] as String?,
       endpoint: json['endpoint'] as Map<String, dynamic>,
       thumbnails: (json['thumbnails'] as List<dynamic>)
           .map((e) => Thumbnail.fromJson(e as Map<String, dynamic>))
@@ -29,8 +30,9 @@ Map<String, dynamic> _$SectionItemToJson(SectionItem instance) =>
     <String, dynamic>{
       'title': instance.title,
       'id': instance.id,
-      'type': _$ItemTypeEnumMap[instance.type]!,
+      'type': instance.type,
       'playlistId': instance.playlistId,
+      'duration': instance.duration,
       'endpoint': instance.endpoint,
       'thumbnails': instance.thumbnails,
       'artists': instance.artists,
@@ -41,8 +43,10 @@ Map<String, dynamic> _$SectionItemToJson(SectionItem instance) =>
 
 const _$ItemTypeEnumMap = {
   ItemType.song: 'MUSIC_VIDEO_TYPE_ATV',
-  ItemType.video: 'MUSIC_VIDEO_TYPE_UGC',
+  ItemType.video: 'MUSIC_VIDEO_TYPE_OMV',
+  ItemType.videoUgc: 'MUSIC_VIDEO_TYPE_UGC',
   ItemType.playlist: 'MUSIC_PAGE_TYPE_PLAYLIST',
   ItemType.album: 'MUSIC_PAGE_TYPE_ALBUM',
+  ItemType.episode: 'MUSIC_PAGE_TYPE_NON_MUSIC_AUDIO_TRACK_PAGE',
   ItemType.unknown: 'unknown',
 };

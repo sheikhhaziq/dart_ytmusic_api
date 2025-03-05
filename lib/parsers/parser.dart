@@ -52,6 +52,9 @@ class Parser {
   }
 
   static Section? parseSection(dynamic data) {
+    if(data['musicShelfRenderer']!=null){
+      return musicShelfRenderer(data['musicShelfRenderer']);
+    }else 
     if (data['musicCarouselShelfRenderer'] != null) {
       return musicCarouselShelfRenderer(data['musicCarouselShelfRenderer']);
     } else if (data['musicPlaylistShelfRenderer'] != null) {
@@ -61,9 +64,19 @@ class Parser {
     return null;
   }
 
+  static Section musicShelfRenderer(data){
+    // [contents, trackingParams, shelfDivider, contentsMultiSelectable]
+   final List contents = data['contents'];
+    return Section(contents:contents
+          .map(parseSectionItem)
+          .where((e) => e != null)
+          .cast<SectionItem>()
+          .toList(),);
+  }
+
   static Section musicCarouselShelfRenderer(data) {
     // [header, contents, trackingParams, itemSize, numItemsPerColumn?]
-
+    
     final List contents = data['contents'];
     final more = data['header']['musicCarouselShelfBasicHeaderRenderer']
         ['moreContentButton'];
@@ -178,7 +191,7 @@ class Parser {
                 "pageType"
               ])) ??
         '';
-    print(ItemType.fromString(type));
+        
     return SectionItem(
       title: title,
       id: id,
@@ -237,7 +250,6 @@ class Parser {
         .toList();
     final subtitle =
         traverseList(data['subtitle'], ["runs", "text"]).join(", ");
-
     return SectionItem(
       title: title,
       id: id,

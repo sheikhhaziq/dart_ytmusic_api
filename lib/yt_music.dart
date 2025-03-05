@@ -1,4 +1,5 @@
 import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dart_ytmusic_api/Modals/album.dart';
 import 'package:dart_ytmusic_api/Modals/artist.dart';
 import 'package:dart_ytmusic_api/Modals/home_page.dart';
 import 'package:dart_ytmusic_api/Modals/playlist.dart';
@@ -491,34 +492,42 @@ class YTMusic {
           ),
     ];
   }
+  // /// Retrieves detailed information about an album given its album ID.
+  // Future<AlbumFull> getAlbum(String albumId) async {
+  //   final data = await constructRequest("browse", body: {"browseId": albumId});
 
-  /// Retrieves detailed information about an album given its album ID.
-  Future<AlbumFull> getAlbum(String albumId) async {
-    final data = await constructRequest("browse", body: {"browseId": albumId});
+  //   final album = AlbumParser.parse(data, albumId);
 
-    final album = AlbumParser.parse(data, albumId);
+  //   final artistSongs = await getArtistSongs(album.artist.artistId ?? '');
+  //   final filteredSongs = artistSongs.where(
+  //     (song) => album.songs
+  //         .where((item) =>
+  //             '${song.album?.name}-${song.name}' ==
+  //             '${item.album?.name}-${item.name}')
+  //         .isNotEmpty,
+  //   );
 
-    final artistSongs = await getArtistSongs(album.artist.artistId ?? '');
-    final filteredSongs = artistSongs.where(
-      (song) => album.songs
-          .where((item) =>
-              '${song.album?.name}-${song.name}' ==
-              '${item.album?.name}-${item.name}')
-          .isNotEmpty,
-    );
+  //   final songsThatArentInArtist = album.songs.where(
+  //     (item) => artistSongs
+  //         .where((song) =>
+  //             '${song.album?.name}-${song.name}' ==
+  //             '${item.album?.name}-${item.name}')
+  //         .isEmpty,
+  //   );
 
-    final songsThatArentInArtist = album.songs.where(
-      (item) => artistSongs
-          .where((song) =>
-              '${song.album?.name}-${song.name}' ==
-              '${item.album?.name}-${item.name}')
-          .isEmpty,
-    );
+  //   return album..songs = [...filteredSongs, ...songsThatArentInArtist];
+  // }
 
-    return album..songs = [...filteredSongs, ...songsThatArentInArtist];
+  /// Retrieves detailed information about an album given its endpoint.
+  Future<AlbumPage> getAlbumPage(Map<String,dynamic> endpoint) async {
+    final data = await constructRequest("browse", body: endpoint);
+
+    return AlbumParser.parse(data);
+
+ 
   }
 
-  /// Retrieves detailed information about a playlist given its playlist ID.
+  /// Retrieves detailed information about a playlist given its endpoint.
   Future<PlaylistPage> getPlaylistPage(Map<String, dynamic> endpoint) async {
     final data = await constructRequest("browse", body: endpoint);
     return PlaylistParser.parse(data);

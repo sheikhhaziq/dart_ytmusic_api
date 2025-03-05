@@ -36,5 +36,5 @@ Map<String, dynamic> _$PlaylistPageToJson(PlaylistPage instance) =>
       'secondSubtitle': instance.secondSubtitle,
       'thumbnails': instance.thumbnails,
       'description': instance.description,
-      'sections': instance.sections.map((section) => section.toJson()),
+      'sections': instance.sections,
     };

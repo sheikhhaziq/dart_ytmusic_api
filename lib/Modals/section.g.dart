@@ -19,6 +19,6 @@ Section _$SectionFromJson(Map<String, dynamic> json) => Section(
 
 Map<String, dynamic> _$SectionToJson(Section instance) => <String, dynamic>{
       'title': instance.title,
-      'contents': instance.contents.map((content) => content.toJson()),
+      'contents': instance.contents,
       'trailingOption': instance.trailingOption,
     };

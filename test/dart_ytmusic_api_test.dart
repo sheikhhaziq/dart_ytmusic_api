@@ -1,17 +1,12 @@
 import 'package:dart_ytmusic_api/yt_music.dart';
 import 'package:test/test.dart';
 
-void main() {
-  test('Album parser should parse album details correctly', () async {
+void main() async{
     YTMusic ytMusic = YTMusic();
     await ytMusic.initialize();
-    await ytMusic.getPlaylistPage({
-      'browseId': 'VLPL4fGSI1pDJn40WjZ6utkIuj2rNg-7iGsq',
-      'browseEndpointContextSupportedConfigs': {
-        'browseEndpointContextMusicConfig': {
-          'pageType': 'MUSIC_PAGE_TYPE_PLAYLIST'
-        }
-      }
-    });
+  test('Album parser should parse album details correctly', () async {
+    await ytMusic.getAlbumPage(
+      {'browseId': 'MPREb_MftU5XaVmDX', 'params': 'ggMrGilPTEFLNXV5X25ENXJuTUNlNzM3aUh2X085YWg5TXdWeDZzbE5DQkpBYw%3D%3D', 'browseEndpointContextSupportedConfigs': {'browseEndpointContextMusicConfig': {'pageType': 'MUSIC_PAGE_TYPE_ALBUM'},},},
+    );
   });
 }
