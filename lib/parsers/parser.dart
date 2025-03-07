@@ -6,7 +6,6 @@ import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 import 'package:dart_ytmusic_api/Modals/trailing_option.dart';
 import 'package:dart_ytmusic_api/enums/item_type.dart';
 import 'package:dart_ytmusic_api/utils/filters.dart';
-import 'package:dart_ytmusic_api/utils/prettyprint.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 
 class Parser {
@@ -52,10 +51,9 @@ class Parser {
   }
 
   static Section? parseSection(dynamic data) {
-    if(data['musicShelfRenderer']!=null){
+    if (data['musicShelfRenderer'] != null) {
       return musicShelfRenderer(data['musicShelfRenderer']);
-    }else 
-    if (data['musicCarouselShelfRenderer'] != null) {
+    } else if (data['musicCarouselShelfRenderer'] != null) {
       return musicCarouselShelfRenderer(data['musicCarouselShelfRenderer']);
     } else if (data['musicPlaylistShelfRenderer'] != null) {
       return musicPlaylistShelfRenderer(data['musicPlaylistShelfRenderer']);
@@ -64,19 +62,21 @@ class Parser {
     return null;
   }
 
-  static Section musicShelfRenderer(data){
+  static Section musicShelfRenderer(data) {
     // [contents, trackingParams, shelfDivider, contentsMultiSelectable]
-   final List contents = data['contents'];
-    return Section(contents:contents
+    final List contents = data['contents'];
+    return Section(
+      contents: contents
           .map(parseSectionItem)
           .where((e) => e != null)
           .cast<SectionItem>()
-          .toList(),);
+          .toList(),
+    );
   }
 
   static Section musicCarouselShelfRenderer(data) {
     // [header, contents, trackingParams, itemSize, numItemsPerColumn?]
-    
+
     final List contents = data['contents'];
     final more = data['header']['musicCarouselShelfBasicHeaderRenderer']
         ['moreContentButton'];
@@ -191,7 +191,7 @@ class Parser {
                 "pageType"
               ])) ??
         '';
-        
+
     return SectionItem(
       title: title,
       id: id,

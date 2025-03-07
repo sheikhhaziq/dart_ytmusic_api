@@ -1,8 +1,8 @@
 library dart_ytmusic_api;
 
 export './yt_music.dart';
-export './enums.dart';
-export './types.dart';
+export './Modals/modals.dart';
+export './enums/enums.dart';
 export './utils/filters.dart';
 export './utils/traverse.dart';
 export './parsers/album_parser.dart';

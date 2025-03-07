@@ -1,10 +1,6 @@
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:dart_ytmusic_api/Modals/album.dart';
-import 'package:dart_ytmusic_api/Modals/artist.dart';
-import 'package:dart_ytmusic_api/Modals/home_page.dart';
-import 'package:dart_ytmusic_api/Modals/playlist.dart';
-import 'package:dart_ytmusic_api/Modals/section.dart';
-import 'package:dart_ytmusic_api/enums.dart';
+import 'package:dart_ytmusic_api/Modals/modals.dart';
+import 'package:dart_ytmusic_api/enums/enums.dart';
 import 'package:dart_ytmusic_api/parsers/album_parser.dart';
 import 'package:dart_ytmusic_api/parsers/artist_parser.dart';
 import 'package:dart_ytmusic_api/parsers/parser.dart';
@@ -13,20 +9,24 @@ import 'package:dart_ytmusic_api/parsers/search_parser.dart';
 import 'package:dart_ytmusic_api/parsers/song_parser.dart';
 import 'package:dart_ytmusic_api/parsers/video_parser.dart';
 import 'package:dart_ytmusic_api/types.dart';
-import 'package:dart_ytmusic_api/utils/prettyprint.dart';
 import 'package:dart_ytmusic_api/utils/traverse.dart';
 import 'package:dio/dio.dart';
 
 class YTMusic {
-  static final YTMusic _instance = YTMusic._internal();
+  final String? _cookies;
+  final String? _gl;
+  final String? _hl;
+  late CookieJar _cookieJar;
+  late Map<String, String> _config;
+  late Dio dio;
+  bool hasInitialized = false;
 
-  factory YTMusic() {
-    return _instance;
-  }
-
-  YTMusic._internal() {
-    cookieJar = CookieJar();
-    config = {};
+  YTMusic({String? cookies, String? location, String? language})
+      : _cookies = cookies,
+        _gl = location,
+        _hl = language {
+    _cookieJar = CookieJar();
+    _config = {};
     dio = Dio(
       BaseOptions(baseUrl: "https://music.youtube.com/", headers: {
         "User-Agent":
@@ -43,7 +43,7 @@ class YTMusic {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final cookies =
-            await cookieJar.loadForRequest(Uri.parse(options.baseUrl));
+            await _cookieJar.loadForRequest(Uri.parse(options.baseUrl));
         final cookieString = cookies
             .map((cookie) => '${cookie.name}=${cookie.value}')
             .join('; ');
@@ -56,7 +56,7 @@ class YTMusic {
         final cookieStrings = response.headers['set-cookie'] ?? [];
         for (final cookieString in cookieStrings) {
           final cookie = Cookie.fromSetCookieValue(cookieString);
-          cookieJar.saveFromResponse(
+          _cookieJar.saveFromResponse(
               Uri.parse(response.requestOptions.baseUrl), [cookie]);
         }
         return handler.next(response);
@@ -64,24 +64,15 @@ class YTMusic {
     ));
   }
 
-  late CookieJar cookieJar;
-  late Map<String, String> config;
-  late Dio dio;
-  bool hasInitialized = false;
-
-  /// Initializes the YTMusic instance with provided cookies, geolocation, and language.
-  Future<YTMusic> initialize({
-    String? cookies,
-    String? gl,
-    String? hl,
-  }) async {
+  /// Initializes the YTMusic instance and fetches YTMusic configs
+  Future<YTMusic> initialize() async {
     if (hasInitialized) {
       return this;
     }
-    if (cookies != null) {
-      for (final cookieString in cookies.split("; ")) {
+    if (_cookies != null) {
+      for (final cookieString in _cookies.split("; ")) {
         final cookie = Cookie.fromSetCookieValue(cookieString);
-        cookieJar.saveFromResponse(
+        _cookieJar.saveFromResponse(
           Uri.parse("https://www.youtube.com/"),
           [cookie],
         );
@@ -90,8 +81,8 @@ class YTMusic {
 
     await fetchConfig();
 
-    if (gl != null) config['GL'] = gl;
-    if (hl != null) config['HL'] = hl;
+    if (_gl != null) _config['GL'] = _gl;
+    if (_hl != null) _config['HL'] = _hl;
 
     hasInitialized = true;
 
@@ -99,28 +90,30 @@ class YTMusic {
   }
 
   /// Fetches the configuration data required for API requests.
+  /// This api automatically calls this function.
+  /// You can call it to forcefully update configs.
   Future<void> fetchConfig() async {
     try {
       final response = await dio.get('/');
       final html = response.data;
-      config['VISITOR_DATA'] = _extractValue(html, r'"VISITOR_DATA":"(.*?)"');
-      config['INNERTUBE_CONTEXT_CLIENT_NAME'] = _extractValue(
+      _config['VISITOR_DATA'] = _extractValue(html, r'"VISITOR_DATA":"(.*?)"');
+      _config['INNERTUBE_CONTEXT_CLIENT_NAME'] = _extractValue(
           html, r'"INNERTUBE_CONTEXT_CLIENT_NAME":\s*(-?\d+|\"(.*?)\")');
-      config['INNERTUBE_CLIENT_VERSION'] =
+      _config['INNERTUBE_CLIENT_VERSION'] =
           _extractValue(html, r'"INNERTUBE_CLIENT_VERSION":"(.*?)"');
-      config['DEVICE'] = _extractValue(html, r'"DEVICE":"(.*?)"');
-      config['PAGE_CL'] =
+      _config['DEVICE'] = _extractValue(html, r'"DEVICE":"(.*?)"');
+      _config['PAGE_CL'] =
           _extractValue(html, r'"PAGE_CL":\s*(-?\d+|\"(.*?)\")');
-      config['PAGE_BUILD_LABEL'] =
+      _config['PAGE_BUILD_LABEL'] =
           _extractValue(html, r'"PAGE_BUILD_LABEL":"(.*?)"');
-      config['INNERTUBE_API_KEY'] =
+      _config['INNERTUBE_API_KEY'] =
           _extractValue(html, r'"INNERTUBE_API_KEY":"(.*?)"');
-      config['INNERTUBE_API_VERSION'] =
+      _config['INNERTUBE_API_VERSION'] =
           _extractValue(html, r'"INNERTUBE_API_VERSION":"(.*?)"');
-      config['INNERTUBE_CLIENT_NAME'] =
+      _config['INNERTUBE_CLIENT_NAME'] =
           _extractValue(html, r'"INNERTUBE_CLIENT_NAME":"(.*?)"');
-      config['GL'] = _extractValue(html, r'"GL":"(.*?)"');
-      config['HL'] = _extractValue(html, r'"HL":"(.*?)"');
+      _config['GL'] = _extractValue(html, r'"GL":"(.*?)"');
+      _config['HL'] = _extractValue(html, r'"HL":"(.*?)"');
     } catch (e) {
       print('Error fetching data: ${e.toString()}');
     }
@@ -138,15 +131,18 @@ class YTMusic {
     Map<String, dynamic> body = const {},
     Map<String, String> query = const {},
   }) async {
+    if (!hasInitialized) {
+      await initialize();
+    }
     final headers = <String, String>{
       ...dio.options.headers,
       "x-origin": "https://music.youtube.com/",
-      "X-Goog-Visitor-Id": config['VISITOR_DATA'] ?? "",
-      "X-YouTube-Client-Name": config['INNERTUBE_CONTEXT_CLIENT_NAME'] ?? '',
-      "X-YouTube-Client-Version": config['INNERTUBE_CLIENT_VERSION'] ?? '',
-      "X-YouTube-Device": config['DEVICE'] ?? '',
-      "X-YouTube-Page-CL": config['PAGE_CL'] ?? '',
-      "X-YouTube-Page-Label": config['PAGE_BUILD_LABEL'] ?? '',
+      "X-Goog-Visitor-Id": _config['VISITOR_DATA'] ?? "",
+      "X-YouTube-Client-Name": _config['INNERTUBE_CONTEXT_CLIENT_NAME'] ?? '',
+      "X-YouTube-Client-Version": _config['INNERTUBE_CLIENT_VERSION'] ?? '',
+      "X-YouTube-Device": _config['DEVICE'] ?? '',
+      "X-YouTube-Page-CL": _config['PAGE_CL'] ?? '',
+      "X-YouTube-Page-Label": _config['PAGE_BUILD_LABEL'] ?? '',
       "X-YouTube-Utc-Offset":
           (-DateTime.now().timeZoneOffset.inMinutes).toString(),
       "X-YouTube-Time-Zone": DateTime.now().timeZoneName,
@@ -155,22 +151,22 @@ class YTMusic {
     final searchParams = Uri.parse("?").replace(queryParameters: {
       ...query,
       "alt": "json",
-      "key": config['INNERTUBE_API_KEY'],
+      "key": _config['INNERTUBE_API_KEY'],
     });
 
     try {
       final response = await dio.post(
-        "youtubei/${config['INNERTUBE_API_VERSION']}/$endpoint${searchParams.toString()}",
+        "youtubei/${_config['INNERTUBE_API_VERSION']}/$endpoint${searchParams.toString()}",
         data: {
           "context": {
             "capabilities": {},
             "client": {
-              "clientName": config['INNERTUBE_CLIENT_NAME'],
-              "clientVersion": config['INNERTUBE_CLIENT_VERSION'],
+              "clientName": _config['INNERTUBE_CLIENT_NAME'],
+              "clientVersion": _config['INNERTUBE_CLIENT_VERSION'],
               "experimentIds": [],
               "experimentsToken": "",
-              "gl": config['GL'],
-              "hl": config['HL'],
+              "gl": _config['GL'],
+              "hl": _config['HL'],
               "locationInfo": {
                 "locationPermissionAuthorizationStatus":
                     "LOCATION_PERMISSION_AUTHORIZATION_STATUS_UNSUPPORTED",
@@ -519,12 +515,10 @@ class YTMusic {
   // }
 
   /// Retrieves detailed information about an album given its endpoint.
-  Future<AlbumPage> getAlbumPage(Map<String,dynamic> endpoint) async {
+  Future<AlbumPage> getAlbumPage(Map<String, dynamic> endpoint) async {
     final data = await constructRequest("browse", body: endpoint);
 
     return AlbumParser.parse(data);
-
- 
   }
 
   /// Retrieves detailed information about a playlist given its endpoint.

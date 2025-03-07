@@ -2,7 +2,6 @@ import 'package:dart_ytmusic_api/Modals/album.dart';
 import 'package:dart_ytmusic_api/Modals/artist.dart';
 import 'package:dart_ytmusic_api/Modals/thumbnail.dart';
 import 'package:dart_ytmusic_api/enums/item_type.dart';
-import 'package:dart_ytmusic_api/types.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'section_item.g.dart';
