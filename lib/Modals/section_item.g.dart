@@ -9,6 +9,7 @@ part of 'section_item.dart';
 SectionItem _$SectionItemFromJson(Map<String, dynamic> json) => SectionItem(
       title: json['title'] as String,
       id: json['id'] as String,
+      isExplicit: json['isExplicit'] as bool? ?? false,
       type: $enumDecode(_$ItemTypeEnumMap, json['type']),
       playlistId: json['playlistId'] as String?,
       duration: json['duration'] as String?,
@@ -30,6 +31,7 @@ Map<String, dynamic> _$SectionItemToJson(SectionItem instance) =>
     <String, dynamic>{
       'title': instance.title,
       'id': instance.id,
+      'isExplicit': instance.isExplicit,
       'type': instance.type,
       'playlistId': instance.playlistId,
       'duration': instance.duration,
@@ -47,6 +49,9 @@ const _$ItemTypeEnumMap = {
   ItemType.videoUgc: 'MUSIC_VIDEO_TYPE_UGC',
   ItemType.playlist: 'MUSIC_PAGE_TYPE_PLAYLIST',
   ItemType.album: 'MUSIC_PAGE_TYPE_ALBUM',
+  ItemType.artist: 'MUSIC_PAGE_TYPE_ARTIST',
   ItemType.episode: 'MUSIC_PAGE_TYPE_NON_MUSIC_AUDIO_TRACK_PAGE',
+  ItemType.podcast: 'MUSIC_PAGE_TYPE_PODCAST_SHOW_DETAIL_PAGE',
+  ItemType.userChannel: 'MUSIC_PAGE_TYPE_USER_CHANNEL',
   ItemType.unknown: 'unknown',
 };

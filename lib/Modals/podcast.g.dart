@@ -1,19 +1,15 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'playlist.dart';
+part of 'podcast.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-PlaylistPage _$PlaylistPageFromJson(Map<String, dynamic> json) => PlaylistPage(
-      playlistId: json['playlistId'] as String,
+PodcastPage _$PodcastPageFromJson(Map<String, dynamic> json) => PodcastPage(
+      podcastId: json['podcastId'] as String,
       title: json['title'] as String,
-      artist: ArtistBasic.fromJson(json['artist'] as Map<String, dynamic>),
       subtitle: json['subtitle'] as String,
-      playEndpoint: json['playEndpoint'] as Map<String, dynamic>?,
-      shuffleEndpoint: json['shuffleEndpoint'] as Map<String, dynamic>?,
-      radioEndpoint: json['radioEndpoint'] as Map<String, dynamic>?,
       secondSubtitle: json['secondSubtitle'] as String,
       thumbnails: (json['thumbnails'] as List<dynamic>)
           .map((e) => Thumbnail.fromJson(e as Map<String, dynamic>))
@@ -25,15 +21,11 @@ PlaylistPage _$PlaylistPageFromJson(Map<String, dynamic> json) => PlaylistPage(
       continuation: json['continuation'] as String?,
     );
 
-Map<String, dynamic> _$PlaylistPageToJson(PlaylistPage instance) =>
+Map<String, dynamic> _$PodcastPageToJson(PodcastPage instance) =>
     <String, dynamic>{
-      'playlistId': instance.playlistId,
+      'podcastId': instance.podcastId,
       'title': instance.title,
       'subtitle': instance.subtitle,
-      'playEndpoint': instance.playEndpoint,
-      'shuffleEndpoint': instance.shuffleEndpoint,
-      'radioEndpoint': instance.radioEndpoint,
-      'artist': instance.artist,
       'secondSubtitle': instance.secondSubtitle,
       'thumbnails': instance.thumbnails,
       'description': instance.description,

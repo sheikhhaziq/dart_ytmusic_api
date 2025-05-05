@@ -26,6 +26,10 @@ bool isRadio(dynamic data) {
   return traverseString(data, ['icon', 'iconType']) == 'MIX';
 }
 
+bool isexplicit(dynamic data) {
+  return traverseString(data, ['icon', 'iconType']) == 'MUSIC_EXPLICIT_BADGE';
+}
+
 /// Verifica se um objeto representa uma duração.
 bool isDuration(dynamic data) {
   final text = traverseString(data, ["text"]);

@@ -10,6 +10,7 @@ part 'section_item.g.dart';
 class SectionItem {
   final String title;
   final String id;
+  final bool isExplicit;
   final ItemType type;
   final String? playlistId;
   final String? duration;
@@ -22,6 +23,7 @@ class SectionItem {
   SectionItem({
     required this.title,
     required this.id,
+    this.isExplicit = false,
     required this.type,
     this.playlistId,
     this.duration,

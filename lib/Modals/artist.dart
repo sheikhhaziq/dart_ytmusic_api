@@ -1,3 +1,4 @@
+import 'package:dart_ytmusic_api/dart_ytmusic_api.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'artist.g.dart';
@@ -24,4 +25,36 @@ class ArtistBasic {
 
   /// Connect the generated [_$ArtistBasicToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$ArtistBasicToJson(this);
+}
+
+class ArtistPage {
+  final String name;
+  final List<Section> sections;
+  final String description;
+  final List<Thumbnail>? thumbnails;
+  final Map<String, dynamic>? playEndpoint;
+  final Map<String, dynamic>? shuffleEndpoint;
+  final Map<String, dynamic>? radioEndpoint;
+  final String? subscribers;
+  final String? channelId;
+
+  // final List<Thumbnail> thumbnails;
+  // final List<SongDetailed> topSongs;
+  // final List<AlbumDetailed> topAlbums;
+  // final List<AlbumDetailed> topSingles;
+  // final List<VideoDetailed> topVideos;
+  // final List<PlaylistDetailed> featuredOn;
+  // final List<ArtistDetailed> similarArtists;
+
+  ArtistPage({
+    required this.name,
+    required this.sections,
+    required this.description,
+    this.thumbnails,
+    this.playEndpoint,
+    this.radioEndpoint,
+    this.shuffleEndpoint,
+    this.channelId,
+    this.subscribers,
+  });
 }

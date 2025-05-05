@@ -19,8 +19,17 @@ enum ItemType {
   @JsonValue('MUSIC_PAGE_TYPE_ALBUM')
   album,
 
+  @JsonValue("MUSIC_PAGE_TYPE_ARTIST")
+  artist,
+
   @JsonValue('MUSIC_PAGE_TYPE_NON_MUSIC_AUDIO_TRACK_PAGE')
   episode,
+
+  @JsonValue('MUSIC_PAGE_TYPE_PODCAST_SHOW_DETAIL_PAGE')
+  podcast,
+
+  @JsonValue("MUSIC_PAGE_TYPE_USER_CHANNEL")
+  userChannel,
 
   @JsonValue('unknown')
   unknown;
@@ -32,11 +41,14 @@ enum ItemType {
     'MUSIC_VIDEO_TYPE_ATV': ItemType.song,
     'MUSIC_PAGE_TYPE_PLAYLIST': ItemType.playlist,
     'MUSIC_PAGE_TYPE_ALBUM': ItemType.album,
-    'MUSIC_PAGE_TYPE_NON_MUSIC_AUDIO_TRACK_PAGE': ItemType.episode
+    'MUSIC_PAGE_TYPE_ARTIST': ItemType.artist,
+    'MUSIC_PAGE_TYPE_PODCAST_SHOW_DETAIL_PAGE': ItemType.podcast,
+    'MUSIC_PAGE_TYPE_NON_MUSIC_AUDIO_TRACK_PAGE': ItemType.episode,
+    "MUSIC_PAGE_TYPE_USER_CHANNEL": ItemType.userChannel,
   };
 
   // Convert from JSON
-  static ItemType fromString(String value) =>
+  static ItemType fromString(String? value) =>
       _customMapping[value] ?? ItemType.unknown;
 
   // Convert to JSON

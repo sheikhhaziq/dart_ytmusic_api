@@ -1,16 +1,20 @@
 import 'package:cookie_jar/cookie_jar.dart';
-import 'package:dart_ytmusic_api/Modals/modals.dart';
-import 'package:dart_ytmusic_api/enums/enums.dart';
-import 'package:dart_ytmusic_api/parsers/album_parser.dart';
-import 'package:dart_ytmusic_api/parsers/artist_parser.dart';
-import 'package:dart_ytmusic_api/parsers/parser.dart';
-import 'package:dart_ytmusic_api/parsers/playlist_parser.dart';
-import 'package:dart_ytmusic_api/parsers/search_parser.dart';
-import 'package:dart_ytmusic_api/parsers/song_parser.dart';
-import 'package:dart_ytmusic_api/parsers/video_parser.dart';
-import 'package:dart_ytmusic_api/types.dart';
-import 'package:dart_ytmusic_api/utils/traverse.dart';
+
+import 'Modals/modals.dart';
+import 'parsers/playlist_parser.dart';
+import 'parsers/album_parser.dart';
+import 'parsers/artist_parser.dart';
+import 'parsers/browse.dart';
+import 'parsers/parser.dart';
+import 'parsers/podcast_parser.dart';
+import 'parsers/profile_parser.dart';
+import 'parsers/search_parser.dart';
+import 'parsers/song_parser.dart';
+import 'parsers/video_parser.dart';
+import 'types.dart';
+import 'utils/traverse.dart';
 import 'package:dio/dio.dart';
+import 'enums/enums.dart';
 
 class YTMusic {
   final String? _cookies;
@@ -73,7 +77,7 @@ class YTMusic {
       for (final cookieString in _cookies.split("; ")) {
         final cookie = Cookie.fromSetCookieValue(cookieString);
         _cookieJar.saveFromResponse(
-          Uri.parse("https://www.youtube.com/"),
+          Uri.parse(dio.options.baseUrl),
           [cookie],
         );
       }
@@ -226,96 +230,123 @@ class YTMusic {
     return traverseList(response, ["query"]).whereType<String>().toList();
   }
 
+  Future<List<SectionItem>> getBrowseMore(Map<String, dynamic> endpoint) async {
+    final data = await constructRequest("browse", body: endpoint);
+
+    return BrowseParser.parseMore(data);
+  }
+
+  Future<Section> getBrowseContinuation(String continuation) async {
+    final data =
+        await constructRequest("browse", query: {"continuation": continuation});
+
+    return BrowseParser.parseContinuation(data);
+  }
+
   /// Performs a search for music with the given query and returns a list of search results.
-  Future<List<SearchResult>> search(String query) async {
+  Future<List<Section>> search(String query) async {
     final searchData = await constructRequest(
       "search",
       body: {"query": query, "params": null},
     );
-
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
-        .map(SearchParser.parse)
+    return traverseList(searchData, ["sectionListRenderer", "contents"])
+        .map(Parser.parseSection)
         .where((e) => e != null)
-        .cast<SearchResult>()
+        .cast<Section>()
         .toList();
+  }
+
+  Future<Section> searchMore(Map<String, dynamic> endpoint) async {
+    final searchData = await constructRequest(
+      "search",
+      body: endpoint,
+    );
+    return SearchParser.parseMore(searchData);
+  }
+
+  Future<Section> searchMoreContinuation(String continuation) async {
+    final data =
+        await constructRequest("search", query: {"continuation": continuation});
+
+    return SearchParser.parseMoreContinuation(data);
   }
 
   /// Performs a search specifically for songs with the given query and returns a list of song details.
-  Future<List<SongDetailed>> searchSongs(String query) async {
-    final searchData = await constructRequest(
-      "search",
-      body: {
-        "query": query,
-        "params": "Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D"
-      },
-    );
+  // Future<List<SongDetailed>> searchSongs(String query) async {
+  //   final searchData = await constructRequest(
+  //     "search",
+  //     body: {
+  //       "query": query,
+  //       "params": "Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D"
+  //     },
+  //   );
 
-    final results =
-        traverseList(searchData, ["musicResponsiveListItemRenderer"]);
-    final mappedResults = results.map(SongParser.parseSearchResult).toList();
+  //   final results =
+  //       traverseList(searchData, ["musicResponsiveListItemRenderer"]);
+  //   final mappedResults = results.map(SongParser.parseSearchResult).toList();
 
-    return mappedResults;
-  }
+  //   return mappedResults;
+  // }
 
   /// Performs a search specifically for videos with the given query and returns a list of video details.
-  Future<List<VideoDetailed>> searchVideos(String query) async {
-    final searchData = await constructRequest(
-      "search",
-      body: {
-        "query": query,
-        "params": "Eg-KAQwIABABGAAgACgAMABqChAEEAMQCRAFEAo%3D"
-      },
-    );
+  // Future<List<VideoDetailed>> searchVideos(String query) async {
+  //   final searchData = await constructRequest(
+  //     "search",
+  //     body: {
+  //       "query": query,
+  //       "params": "Eg-KAQwIABABGAAgACgAMABqChAEEAMQCRAFEAo%3D"
+  //     },
+  //   );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
-        .map(VideoParser.parseSearchResult)
-        .toList();
-  }
+  //   return traverseList(searchData, ["musicResponsiveListItemRenderer"])
+  //       .map(VideoParser.parseSearchResult)
+  //       .toList();
+  // }
 
   /// Performs a search specifically for artists with the given query and returns a list of artist details.
-  Future<List<ArtistDetailed>> searchArtists(String query) async {
-    final searchData = await constructRequest(
-      "search",
-      body: {
-        "query": query,
-        "params": "Eg-KAQwIABAAGAAgASgAMABqChAEEAMQCRAFEAo%3D"
-      },
-    );
+  // Future<List<ArtistDetailed>> searchArtists(String query) async {
+  //   final searchData = await constructRequest(
+  //     "search",
+  //     body: {
+  //       "query": query,
+  //       "params": "Eg-KAQwIABAAGAAgASgAMABqChAEEAMQCRAFEAo%3D"
+  //     },
+  //   );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
-        .map(ArtistParser.parseSearchResult)
-        .toList();
-  }
+  //   return traverseList(searchData, ["musicResponsiveListItemRenderer"])
+  //       .map(ArtistParser.parseSearchResult)
+  //       .toList();
+  // }
 
-  /// Performs a search specifically for albums with the given query and returns a list of album details.
-  Future<List<AlbumDetailed>> searchAlbums(String query) async {
-    final searchData = await constructRequest(
-      "search",
-      body: {
-        "query": query,
-        "params": "Eg-KAQwIABAAGAEgACgAMABqChAEEAMQCRAFEAo%3D"
-      },
-    );
+  // /// Performs a search specifically for albums with the given query and returns a list of album details.
+  // Future<List<AlbumDetailed>> searchAlbums(String query) async {
+  //   final searchData = await constructRequest(
+  //     "search",
+  //     body: {
+  //       "query": query,
+  //       "params": "Eg-KAQwIABAAGAEgACgAMABqChAEEAMQCRAFEAo%3D"
+  //     },
+  //   );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
-        .map(AlbumParser.parseSearchResult)
-        .toList();
-  }
+  //   return traverseList(searchData, ["musicResponsiveListItemRenderer"])
+  //       .map(AlbumParser.parseSearchResult)
+  //       .toList();
+  // }
 
   /// Performs a search specifically for playlists with the given query and returns a list of playlist details.
-  Future<List<PlaylistDetailed>> searchPlaylists(String query) async {
-    final searchData = await constructRequest(
-      "search",
-      body: {
-        "query": query,
-        "params": "Eg-KAQwIABAAGAAgACgBMABqChAEEAMQCRAFEAo%3D"
-      },
-    );
+  // Future<List<PlaylistDetailed>> searchPlaylists(String query) async {
+  //   final searchData = await constructRequest(
+  //     "search",
+  //     body: {
+  //       "query": query,
+  //       "params": "Eg-KAQwIABAAGAAgACgBMABqChAEEAMQCRAFEAo%3D"
+  //     },
+  //   );
 
-    return traverseList(searchData, ["musicResponsiveListItemRenderer"])
-        .map(PlaylistParser.parseSearchResult)
-        .toList();
-  }
+  //   return traverseList(searchData, ["musicResponsiveListItemRenderer"])
+  //       .map(PlaylistParser.parseSearchResult)
+  //       .toList();
+  // }
 
   /// Retrieves detailed information about a song given its video ID.
   Future<SongFull> getSong(String videoId) async {
@@ -370,123 +401,133 @@ class YTMusic {
   }
 
   /// Retrieves detailed information about an artist given its artist ID.
-  Future<ArtistFull> getArtist(String artistId) async {
-    final data = await constructRequest("browse", body: {"browseId": artistId});
+  // Future<ArtistPage> getArtist(String artistId) async {
+  //   final data = await constructRequest("browse", body: {"browseId": artistId});
 
-    return ArtistParser.parse(data, artistId);
+  //   return ArtistParser.parse(data);
+  // }
+
+  Future<ArtistPage> getArtistPage(Map<String, dynamic> endpoint) async {
+    final data = await constructRequest("browse", body: endpoint);
+    return ArtistParser.parse(data);
   }
 
   /// Retrieves a list of songs by a specific artist given the artist's ID.
-  Future<List<SongDetailed>> getArtistSongs(String artistId) async {
-    final artistData =
-        await constructRequest("browse", body: {"browseId": artistId});
-    final browseToken =
-        traverse(artistData, ["musicShelfRenderer", "title", "browseId"]);
+  // Future<List<SongDetailed>> getArtistSongs(String artistId) async {
+  //   final artistData =
+  //       await constructRequest("browse", body: {"browseId": artistId});
+  //   final browseToken =
+  //       traverse(artistData, ["musicShelfRenderer", "title", "browseId"]);
 
-    if (browseToken is List) {
-      return [];
-    }
+  //   if (browseToken is List) {
+  //     return [];
+  //   }
 
-    final songsData =
-        await constructRequest("browse", body: {"browseId": browseToken});
-    final continueToken = traverse(songsData, ["continuation"]);
-    late final Map moreSongsData;
+  //   final songsData =
+  //       await constructRequest("browse", body: {"browseId": browseToken});
+  //   final continueToken = traverse(songsData, ["continuation"]);
+  //   late final Map moreSongsData;
 
-    if (continueToken is String) {
-      moreSongsData = await constructRequest(
-        "browse",
-        query: {"continuation": continueToken},
-      );
-    } else {
-      moreSongsData = {};
-    }
+  //   if (continueToken is String) {
+  //     moreSongsData = await constructRequest(
+  //       "browse",
+  //       query: {"continuation": continueToken},
+  //     );
+  //   } else {
+  //     moreSongsData = {};
+  //   }
 
-    return [
-      ...traverseList(songsData, ["musicResponsiveListItemRenderer"]),
-      ...traverseList(moreSongsData, ["musicResponsiveListItemRenderer"]),
-    ]
-        .map((s) => SongParser.parseArtistSong(
-              s,
-              ArtistBasic(
-                artistId: artistId,
-                name: traverseString(artistData, ["header", "title", "text"]) ??
-                    '',
-              ),
-            ))
-        .toList();
-  }
+  //   return [
+  //     ...traverseList(songsData, ["musicResponsiveListItemRenderer"]),
+  //     ...traverseList(moreSongsData, ["musicResponsiveListItemRenderer"]),
+  //   ]
+  //       .map((s) => SongParser.parseArtistSong(
+  //             s,
+  //             ArtistBasic(
+  //               artistId: artistId,
+  //               name: traverseString(artistData, ["header", "title", "text"]) ??
+  //                   '',
+  //             ),
+  //           ))
+  //       .toList();
+  // }
 
   /// Retrieves a list of albums by a specific artist given the artist's ID.
-  Future<List<AlbumDetailed>> getArtistAlbums(String artistId) async {
-    final artistData =
-        await constructRequest("browse", body: {"browseId": artistId});
-    final artistAlbumsData =
-        traverseList(artistData, ["musicCarouselShelfRenderer"])[0];
-    final browseBody =
-        traverse(artistAlbumsData, ["moreContentButton", "browseEndpoint"]);
-    if (browseBody is List) {
-      return [];
-    }
-    final albumsData = await constructRequest(
-      "browse",
-      body: browseBody is List ? {} : browseBody,
-    );
+  // Future<List<AlbumDetailed>> getArtistAlbums(String artistId) async {
+  //   final artistData =
+  //       await constructRequest("browse", body: {"browseId": artistId});
+  //   final artistAlbumsData =
+  //       traverseList(artistData, ["musicCarouselShelfRenderer"])[0];
+  //   final browseBody =
+  //       traverse(artistAlbumsData, ["moreContentButton", "browseEndpoint"]);
+  //   if (browseBody is List) {
+  //     return [];
+  //   }
+  //   final albumsData = await constructRequest(
+  //     "browse",
+  //     body: browseBody is List ? {} : browseBody,
+  //   );
 
-    return [
-      ...traverseList(albumsData, ["musicTwoRowItemRenderer"])
-          .map(
-            (item) => AlbumParser.parseArtistAlbum(
-              item,
-              ArtistBasic(
-                artistId: artistId,
-                name: traverseString(albumsData, ["header", "runs", "text"]) ??
-                    '',
-              ),
-            ),
-          )
-          .where(
-            (album) => album.artist.artistId == artistId,
-          ),
-    ];
-  }
+  //   return [
+  //     ...traverseList(albumsData, ["musicTwoRowItemRenderer"])
+  //         .map(
+  //           (item) => AlbumParser.parseArtistAlbum(
+  //             item,
+  //             ArtistBasic(
+  //               artistId: artistId,
+  //               name: traverseString(albumsData, ["header", "runs", "text"]) ??
+  //                   '',
+  //             ),
+  //           ),
+  //         )
+  //         .where(
+  //           (album) => album.artist.artistId == artistId,
+  //         ),
+  //   ];
+  // }
 
-  Future<List<AlbumDetailed>> getArtistSingles(String artistId) async {
-    final artistData =
-        await constructRequest("browse", body: {"browseId": artistId});
+  // Future<List<AlbumDetailed>> getArtistSingles(String artistId) async {
+  //   final artistData =
+  //       await constructRequest("browse", body: {"browseId": artistId});
 
-    final artistSinglesData =
-        traverseList(artistData, ["musicCarouselShelfRenderer"]).length < 2
-            ? []
-            : traverseList(artistData, ["musicCarouselShelfRenderer"])
-                .elementAt(1);
+  //   final artistSinglesData =
+  //       traverseList(artistData, ["musicCarouselShelfRenderer"]).length < 2
+  //           ? []
+  //           : traverseList(artistData, ["musicCarouselShelfRenderer"])
+  //               .elementAt(1);
 
-    final browseBody =
-        traverse(artistSinglesData, ["moreContentButton", "browseEndpoint"]);
-    if (browseBody is List) {
-      return [];
-    }
+  //   final browseBody =
+  //       traverse(artistSinglesData, ["moreContentButton", "browseEndpoint"]);
+  //   if (browseBody is List) {
+  //     return [];
+  //   }
 
-    final singlesData = await constructRequest(
-      "browse",
-      body: browseBody is List ? {} : browseBody,
-    );
+  //   final singlesData = await constructRequest(
+  //     "browse",
+  //     body: browseBody is List ? {} : browseBody,
+  //   );
 
-    return [
-      ...traverseList(singlesData, ["musicTwoRowItemRenderer"])
-          .map(
-            (item) => AlbumParser.parseArtistAlbum(
-              item,
-              ArtistBasic(
-                artistId: artistId,
-                name: traverseString(singlesData, ["header", "runs", "text"]) ??
-                    '',
-              ),
-            ),
-          )
-          .where(
-            (album) => album.artist.artistId == artistId,
-          ),
-    ];
+  //   return [
+  //     ...traverseList(singlesData, ["musicTwoRowItemRenderer"])
+  //         .map(
+  //           (item) => AlbumParser.parseArtistAlbum(
+  //             item,
+  //             ArtistBasic(
+  //               artistId: artistId,
+  //               name: traverseString(singlesData, ["header", "runs", "text"]) ??
+  //                   '',
+  //             ),
+  //           ),
+  //         )
+  //         .where(
+  //           (album) => album.artist.artistId == artistId,
+  //         ),
+  //   ];
+  // }
+
+  Future<ProfilePage> getProfilePage(Map<String, dynamic> endpoint) async {
+    final data = await constructRequest("browse", body: endpoint);
+    return ProfileParser.parse(data);
   }
   // /// Retrieves detailed information about an album given its album ID.
   // Future<AlbumFull> getAlbum(String albumId) async {
@@ -527,49 +568,61 @@ class YTMusic {
     return PlaylistParser.parse(data);
   }
 
-  /// Retrieves detailed information about a playlist given its playlist ID.
-  Future<PlaylistPage> getPlaylistPageFromId(String playlistId) async {
-    if (playlistId.startsWith("PL")) {
-      playlistId = "VL$playlistId";
-    }
-
+  Future<List<Section>> getPlaylistPageContinuation(String continuation) async {
     final data =
-        await constructRequest("browse", body: {"browseId": playlistId});
+        await constructRequest("browse", query: {"continuation": continuation});
 
-    return PlaylistParser.parse(data);
+    return PlaylistParser.parseContinuation(data);
   }
 
+  /// Retrieves detailed information about a playlist given its playlist ID.
+  // Future<PlaylistPage> getPlaylistPageFromId(String playlistId) async {
+  //   if (playlistId.startsWith("PL")) {
+  //     playlistId = "VL$playlistId";
+  //   }
+
+  //   final data =
+  //       await constructRequest("browse", body: {"browseId": playlistId});
+
+  //   return PlaylistParser.parse(data);
+  // }
+
   /// Retrieves a list of videos from a playlist given its playlist ID.
-  Future<List<VideoDetailed>> getPlaylistVideos(String playlistId) async {
-    if (playlistId.startsWith("PL")) {
-      playlistId = "VL$playlistId";
-    }
+  // Future<List<VideoDetailed>> getPlaylistVideos(String playlistId) async {
+  //   if (playlistId.startsWith("PL")) {
+  //     playlistId = "VL$playlistId";
+  //   }
 
-    final playlistData =
-        await constructRequest("browse", body: {"browseId": playlistId});
+  //   final playlistData =
+  //       await constructRequest("browse", body: {"browseId": playlistId});
 
-    final songs = traverseList(
-      playlistData,
-      ["musicPlaylistShelfRenderer", "musicResponsiveListItemRenderer"],
-    );
-    dynamic continuation = traverse(playlistData, ["continuation"]);
-    if (continuation is List) {
-      continuation = continuation[0];
-    }
-    while (continuation is! List) {
-      final songsData = await constructRequest(
-        "browse",
-        query: {"continuation": continuation},
-      );
-      songs
-          .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
-      continuation = traverse(songsData, ["continuation"]);
-    }
+  //   final songs = traverseList(
+  //     playlistData,
+  //     ["musicPlaylistShelfRenderer", "musicResponsiveListItemRenderer"],
+  //   );
+  //   dynamic continuation = traverse(playlistData, ["continuation"]);
+  //   if (continuation is List) {
+  //     continuation = continuation[0];
+  //   }
+  //   while (continuation is! List) {
+  //     final songsData = await constructRequest(
+  //       "browse",
+  //       query: {"continuation": continuation},
+  //     );
+  //     songs
+  //         .addAll(traverseList(songsData, ["musicResponsiveListItemRenderer"]));
+  //     continuation = traverse(songsData, ["continuation"]);
+  //   }
 
-    return songs
-        .map(VideoParser.parsePlaylistVideo)
-        .whereType<VideoDetailed>()
-        .toList();
+  //   return songs
+  //       .map(VideoParser.parsePlaylistVideo)
+  //       .whereType<VideoDetailed>()
+  //       .toList();
+  // }
+
+  Future<PodcastPage> getPodcastPage(Map<String, dynamic> endpoint) async {
+    final data = await constructRequest("browse", body: endpoint);
+    return PodcastParser.parse(data);
   }
 
   /// Retrieves the home sections of the music platform.
@@ -590,6 +643,7 @@ class YTMusic {
 
       sections
           .addAll(traverseList(data, ["sectionListContinuation", "contents"]));
+
       continuation = traverseString(data, ["continuation"]);
       limit--;
     }
