@@ -9,26 +9,24 @@ class BrowseParser {
   }
 
   static List<SectionItem> parseMore(data) {
-    // [responseContext, contents, header, trackingParams, maxAgeStoreSeconds]
-
-    List contents = traverse(data['contents'], [
+    final sectionListRenderer = traverse(data['contents'], [
       'singleColumnBrowseResultsRenderer',
       'tabs',
       'sectionListRenderer',
-      'gridRenderer',
-      'items'
     ]);
-
-    if (contents.isEmpty) {
-      contents = traverse(data['contents'], [
-        'singleColumnBrowseResultsRenderer',
-        'tabs',
-        'tabRenderer',
-        'sectionListRenderer',
-        'musicPlaylistShelfRenderer',
-        'contents'
-      ]);
+    List contents = [];
+    if (sectionListRenderer is! List) {
+      contents = traverse(sectionListRenderer, ['gridRenderer', 'items']);
+      if (contents.isEmpty) {
+        contents = traverse(
+            sectionListRenderer, ['musicPlaylistShelfRenderer', 'contents']);
+      }
+      if (contents.isEmpty) {
+        contents = traverse(
+            sectionListRenderer, ['musicCarouselShelfRenderer', 'contents']);
+      }
     }
+
     if (contents.isEmpty) {
       contents = traverse(data['contents'], [
         'twoColumnBrowseResultsRenderer',
