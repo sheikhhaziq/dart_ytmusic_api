@@ -217,8 +217,7 @@ class YTMusic {
         return jsonData;
       }
     } on DioException catch (e) {
-      print(
-          'Failed to make request to ${e.requestOptions.uri} - ${e.response?.statusCode} - [${e.response?.data}]');
+      throw "Error${e.response!.statusMessage}";
     }
   }
 
